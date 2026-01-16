@@ -161,8 +161,3 @@ python main.py --mode web --port 80
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
-
-- Built with TensorFlow for neural network capabilities
-- Uses Flask for the web interface
-- Network scanning powered by nmap and arp-scan
