@@ -1,0 +1,18 @@
+[Unit]
+Description=IoT Anomaly Detection System
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/iot-anomaly-detection
+ExecStart=/usr/bin/python3 /home/pi/iot-anomaly-detection/web_interface.py
+Restart=always
+RestartSec=10
+
+# Environment variables for optimized performance
+Environment="TF_CPP_MIN_LOG_LEVEL=2"
+Environment="OMP_NUM_THREADS=4"
+
+[Install]
+WantedBy=multi-user.target

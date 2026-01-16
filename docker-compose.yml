@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  iot-anomaly-detection:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./logs:/app/logs
+    privileged: true  # Required for network access
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - PYTHONPATH=/app/src
+    command: python main.py --mode web --port 5000

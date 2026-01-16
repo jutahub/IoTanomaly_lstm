@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Network Scanner & Anomaly Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2em;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            gap: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: 1px solid #ccc;
+            color: #333;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            background: #d0d0d0;
+        }
+
+        .nav-tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .btn-scan {
+            background: #2ecc71;
+        }
+
+        .btn-scan:hover {
+            background: #27ae60;
+        }
+
+        .btn-monitor {
+            background: #9b59b6;
+        }
+
+        .btn-monitor:hover {
+            background: #8e44ad;
+        }
+
+        .btn-stop {
+            background: #e74c3c;
+        }
+
+        .btn-stop:hover {
+            background: #c0392b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-up {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-down {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .alerts-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+
+        .alert-critical {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .alert-high {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .alert-medium {
+            border-left-color: #3498db;
+            background: #eaf2f8;
+        }
+
+        .alert-low {
+            border-left-color: #2ecc71;
+            background: #eafaf1;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .about-content {
+            line-height: 1.6;
+        }
+
+        .about-content h2 {
+            color: #2c3e50;
+            margin: 20px 0 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .about-content h3 {
+            color: #3498db;
+            margin: 15px 0 10px;
+        }
+
+        .about-content p {
+            margin-bottom: 15px;
+        }
+
+        .neural-network-section,
+        .iot-security-section,
+        .how-it-works-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 3px solid #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-container {
+                display: block;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1000px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IoT Network Scanner & Anomaly Detection</h1>
+            <div class="subtitle">Monitor and analyze network traffic for anomalies</div>
+        </header>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-page="dashboard">Dashboard</div>
+            <div class="nav-tab" data-page="about">About System</div>
+        </div>
+
+        <div id="dashboard-page" class="page active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="host-count">0</div>
+                    <div class="stat-label">Active Hosts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="alert-count">0</div>
+                    <div class="stat-label">Alerts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="local-ip">...</div>
+                    <div class="stat-label">Local IP</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="monitoring-status">Stopped</div>
+                    <div class="stat-label">Monitoring</div>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="left-column">
+                    <div class="card">
+                        <h2>Network Scan</h2>
+                        <button id="scan-btn" class="btn-scan">Scan Network</button>
+                        <button id="toggle-monitoring" class="btn-monitor">Start Monitoring</button>
+                    </div>
+
+                    <div class="card">
+                        <h2>Active Hosts</h2>
+                        <div id="loading" class="loading hidden">Scanning network...</div>
+                        <table id="hosts-table">
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Hostname</th>
+                                    <th>Status</th>
+                                    <th>MAC Address</th>
+                                    <th>Vendor</th>
+                                    <th>Monitor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hosts-tbody">
+                                <!-- Hosts will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="card">
+                        <h2>Recent Alerts</h2>
+                        <div id="alerts-container" class="alerts-container">
+                            <p>No alerts yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="about-page" class="page">
+            <div class="card">
+                <div class="about-content">
+                    <h2>About IoT Anomaly Detection System</h2>
+
+                    <div class="neural-network-section">
+                        <h3>Neural Network Model</h3>
+                        <p>Our system uses a hybrid LSTM+RNN neural network architecture specifically designed for detecting anomalies in IoT network traffic:</p>
+                        <ul>
+                            <li><strong>LSTM Layers</strong>: Long Short-Term Memory layers capture temporal dependencies in network traffic patterns over time</li>
+                            <li><strong>RNN Layer</strong>: Recurrent Neural Network layer processes sequential data to identify unusual patterns</li>
+                            <li><strong>Quantization</strong>: Model is quantized to run efficiently on edge devices like Raspberry Pi</li>
+                            <li><strong>Sequence Analysis</strong>: Analyzes 60-packet sequences to detect deviations from normal traffic patterns</li>
+                            <li><strong>Anomaly Detection</strong>: Uses reconstruction error (MSE) to identify anomalous network behavior</li>
+                        </ul>
+                    </div>
+
+                    <div class="iot-security-section">
+                        <h3>How IoT Device Protection Works</h3>
+                        <p>IoT devices are particularly vulnerable to cyber attacks due to their limited security capabilities and constant connectivity. Our system protects IoT devices by:</p>
+                        <ul>
+                            <li><strong>Continuous Monitoring</strong>: Real-time analysis of network traffic to all connected IoT devices</li>
+                            <li><strong>Behavioral Analysis</strong>: Learning normal traffic patterns to detect deviations that could indicate attacks</li>
+                            <li><strong>Early Threat Detection</strong>: Identifying potential threats before they can cause damage</li>
+                            <li><strong>Automated Response</strong>: Generating alerts when suspicious activity is detected</li>
+                            <li><strong>Edge Computing</strong>: Processing data locally to reduce latency and maintain privacy</li>
+                        </ul>
+                        <p>Common threats detected include DDoS attacks, unauthorized access attempts, unusual data exfiltration, and command injection attempts.</p>
+                    </div>
+
+                    <div class="how-it-works-section">
+                        <h3>How the Program Works</h3>
+                        <ol>
+                            <li><strong>Network Discovery</strong>: Scans the local network to identify all connected devices using arp-scan</li>
+                            <li><strong>Traffic Capture</strong>: Monitors network packets flowing to and from selected IoT devices</li>
+                            <li><strong>Data Preprocessing</strong>: Converts raw network packets into features suitable for neural network analysis</li>
+                            <li><strong>Pattern Recognition</strong>: The LSTM+RNN model analyzes 60-packet sequences to identify normal vs anomalous patterns</li>
+                            <li><strong>Anomaly Detection</strong>: Compares current traffic patterns against learned normal behavior</li>
+                            <li><strong>Alert Generation</strong>: Creates alerts when anomalies are detected with confidence scores</li>
+                            <li><strong>Response Options</strong>: Provides notifications and potential automated responses to security events</li>
+                        </ol>
+                        <p>The system is designed to run on a Raspberry Pi 5 with 8GB RAM, making it cost-effective and energy-efficient for continuous IoT security monitoring.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Page navigation
+            const navTabs = document.querySelectorAll('.nav-tab');
+            const pages = document.querySelectorAll('.page');
+
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const pageId = tab.getAttribute('data-page');
+
+                    // Update active tab
+                    navTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // Show active page
+                    pages.forEach(page => {
+                        page.classList.remove('active');
+                        if (page.id === `${pageId}-page`) {
+                            page.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            const scanBtn = document.getElementById('scan-btn');
+            const toggleMonitoringBtn = document.getElementById('toggle-monitoring');
+            const hostsTbody = document.getElementById('hosts-tbody');
+            const loadingDiv = document.getElementById('loading');
+            const hostCountSpan = document.getElementById('host-count');
+            const alertCountSpan = document.getElementById('alert-count');
+            const localIpSpan = document.getElementById('local-ip');
+            const monitoringStatusSpan = document.getElementById('monitoring-status');
+            const alertsContainer = document.getElementById('alerts-container');
+
+            // Selected IPs for monitoring
+            let selectedIpsForMonitoring = new Set();
+
+            // Load initial data
+            loadLocalIp();
+            loadActiveHosts();
+            loadAlerts();
+
+            // Set up periodic updates
+            setInterval(loadAlerts, 5000); // Update alerts every 5 seconds
+
+            scanBtn.addEventListener('click', scanNetwork);
+
+            toggleMonitoringBtn.addEventListener('click', toggleMonitoring);
+
+            function loadLocalIp() {
+                fetch('/api/network/local_ip')
+                    .then(response => response.json())
+                    .then(data => {
+                        localIpSpan.textContent = data.local_ip;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching local IP:', error);
+                        localIpSpan.textContent = 'Error';
+                    });
+            }
+
+            function loadActiveHosts() {
+                fetch('/api/network/active_hosts')
+                    .then(response => response.json())
+                    .then(hosts => {
+                        updateHostsTable(hosts);
+                        hostCountSpan.textContent = hosts.length;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching active hosts:', error);
+                    });
+            }
+
+            function scanNetwork() {
+                scanBtn.disabled = true;
+                loadingDiv.classList.remove('hidden');
+
+                fetch('/api/network/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateHostsTable(data.hosts);
+                        hostCountSpan.textContent = data.count;
+                    } else {
+                        alert('Scan failed: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during scan:', error);
+                    alert('Error during scan: ' + error.message);
+                })
+                .finally(() => {
+                    scanBtn.disabled = false;
+                    loadingDiv.classList.add('hidden');
+                });
+            }
+
+            function updateHostsTable(hosts) {
+                hostsTbody.innerHTML = '';
+
+                if (hosts.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="6" style="text-align: center;">No active hosts found</td>';
+                    hostsTbody.appendChild(row);
+                    return;
+                }
+
+                hosts.forEach(host => {
+                    const row = document.createElement('tr');
+
+                    // Create monitor checkbox
+                    const monitorCell = document.createElement('td');
+                    const monitorCheckbox = document.createElement('input');
+                    monitorCheckbox.type = 'checkbox';
+                    monitorCheckbox.id = `monitor-${host.ip}`;
+                    monitorCheckbox.value = host.ip;
+
+                    monitorCheckbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            selectedIpsForMonitoring.add(this.value);
+                        } else {
+                            selectedIpsForMonitoring.delete(this.value);
+                        }
+                        console.log('Selected IPs for monitoring:', Array.from(selectedIpsForMonitoring));
+                    });
+
+                    monitorCell.appendChild(monitorCheckbox);
+
+                    row.innerHTML = `
+                        <td>${host.ip}</td>
+                        <td>${host.hostname || 'Unknown'}</td>
+                        <td><span class="status-${host.status}">${host.status}</span></td>
+                        <td>${host.mac_address || 'N/A'}</td>
+                        <td>${host.vendor || 'N/A'}</td>
+                    `;
+
+                    row.appendChild(monitorCell);
+                    hostsTbody.appendChild(row);
+                });
+            }
+
+            function toggleMonitoring() {
+                const isCurrentlyMonitoring = monitoringStatusSpan.textContent === 'Active';
+
+                if (isCurrentlyMonitoring) {
+                    // Stop monitoring
+                    stopMonitoring();
+                } else {
+                    // Start monitoring
+                    if (selectedIpsForMonitoring.size === 0) {
+                        alert('Please select at least one IP to monitor');
+                        return;
+                    }
+                    startMonitoring();
+                }
+            }
+
+            function startMonitoring() {
+                fetch('/api/monitoring/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        target_ips: Array.from(selectedIpsForMonitoring),
+                        interface: null
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        monitoringStatusSpan.textContent = 'Active';
+                        monitoringStatusSpan.style.color = '#2ecc71'; // green
+                        toggleMonitoringBtn.textContent = 'Stop Monitoring';
+                        toggleMonitoringBtn.className = 'btn-stop';
+                        alert('Monitoring started for ' + selectedIpsForMonitoring.size + ' IPs');
+                    } else {
+                        alert('Failed to start monitoring: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting monitoring:', error);
+                    alert('Error starting monitoring: ' + error.message);
+                });
+            }
+
+            function stopMonitoring() {
+                fetch('/api/monitoring/stop', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        monitoringStatusSpan.textContent = 'Stopped';
+                        monitoringStatusSpan.style.color = '#e74c3c'; // red
+                        toggleMonitoringBtn.textContent = 'Start Monitoring';
+                        toggleMonitoringBtn.className = 'btn-monitor';
+                        alert('Monitoring stopped');
+                    } else {
+                        alert('Failed to stop monitoring: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error stopping monitoring:', error);
+                    alert('Error stopping monitoring: ' + error.message);
+                });
+            }
+
+            function loadAlerts() {
+                fetch('/api/notifications/alerts')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateAlertsDisplay(data.alerts);
+                        alertCountSpan.textContent = data.count;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching alerts:', error);
+                    });
+            }
+
+            function updateAlertsDisplay(alerts) {
+                alertsContainer.innerHTML = '';
+
+                if (alerts.length === 0) {
+                    alertsContainer.innerHTML = '<p>No alerts yet.</p>';
+                    return;
+                }
+
+                // Sort alerts by timestamp (newest first)
+                alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                alerts.slice(0, 20).forEach(alert => { // Show last 20 alerts
+                    const alertDiv = document.createElement('div');
+                    const severityClass = `alert-${alert.severity.toLowerCase()}`;
+                    alertDiv.className = `alert-item ${severityClass}`;
+
+                    alertDiv.innerHTML = `
+                        <div><strong>${new Date(alert.timestamp).toLocaleString()}</strong></div>
+                        <div><strong>IP:</strong> ${alert.ip_address}</div>
+                        <div><strong>Confidence:</strong> ${(alert.confidence * 100).toFixed(2)}%</div>
+                        <div><strong>MSE:</strong> ${alert.mse_value.toFixed(6)}</div>
+                        <div><strong>Severity:</strong> ${alert.severity}</div>
+                    `;
+
+                    alertsContainer.appendChild(alertDiv);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
