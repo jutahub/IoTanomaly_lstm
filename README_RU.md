@@ -44,7 +44,7 @@ iot-anomaly-detection/
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/yourusername/iot-anomaly-detection.git
+git clone https://github.com/jutahub/IoTanomaly_lstm.git
 cd iot-anomaly-detection
 ```
 
